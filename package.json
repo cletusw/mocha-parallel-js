@@ -1,0 +1,25 @@
+{
+  "name": "mocha-parallel-js",
+  "version": "0.1.0",
+  "description": "JS API for running Mocha test files in parallel",
+  "keywords": [
+    "mocha",
+    "parallel",
+    "test"
+  ],
+  "homepage": "https://github.com/cletusw/mocha-parallel-js#readme",
+  "bugs": {
+    "url": "https://github.com/cletusw/mocha-parallel-js/issues"
+  },
+  "license": "MIT",
+  "author": "Clayton Watts",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cletusw/mocha-parallel-js.git"
+  },
+  "dependencies": {
+    "cycle": "^1.0.3",
+    "mocha": "^1.7.0 || ^2.0.0"
+  }
+}
