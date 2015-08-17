@@ -15,38 +15,26 @@ exports = module.exports = mochaParallel;
  *
  * @example
  * var files = [ 'test1.js', 'test2.js' ];
- * var mochaOptions = {
- *   reporter: 'tap',
- *   timeout: 10e3
+ * var options = {
+ *   setup: 'setup.js',
+ *   mochaOptions: {
+ *     reporter: 'tap',
+ *     timeout: 10e3
+ *   }
  * };
- * mochaParallel(files, mochaOptions, function(rootSuite) {
+ * mochaParallel(files, options, function(rootSuite) {
  *   console.log('ALL DONE');
  *   console.log(rootSuite.suites);
  * });
  *
  * @param {string[]} files - Array of tests' filenames
- * @param {string} [setup] - Optional file to be run before each test file
- * @param {Object} [mochaOptions] - Optional options to pass to Mocha's JS API
+ * @param {Object} options
+ * @param {string} [options.setup] - Optional file to be run before each test file
+ * @param {Object} [options.mochaOptions] - Optional options to pass to Mocha's JS API
  *   @see {@link https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options}
  * @param {mochaParallelCallback} callback - Called when all test have completed
  */
-function mochaParallel(files, setup, mochaOptions, callback) {
-  if (arguments.length === 2) {
-    callback = arguments[1];
-    setup = undefined;
-    mochaOptions = undefined;
-  }
-  else if (arguments.length === 3) {
-    callback = arguments[2];
-    if (typeof arguments[1] === 'string') {
-      mochaOptions = undefined;
-    }
-    else {
-      mochaOptions = arguments[1];
-      setup = undefined;
-    }
-  }
-
+function mochaParallel(files, options, callback) {
   var forks = files.length;
   var rootSuite = {
     root: true,
@@ -90,8 +78,8 @@ function mochaParallel(files, setup, mochaOptions, callback) {
     // Begin testing
     runner.send({
       file: file,
-      setup: setup,
-      options: mochaOptions
+      setup: options.setup,
+      options: options.mochaOptions
     });
   });
 }
