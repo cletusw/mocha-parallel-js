@@ -46,23 +46,27 @@ function mochaParallel(files, options, callback) {
 
       forks--;
       if (!forks) {
-        var rootSuite = {
-          root: true,
-          suites: results.reduce(function (a, b) {
-            // Flatten
-            return a.concat(b);
-          })
-        };
-
-        // Update parent link to point to new rootSuite
-        rootSuite.suites.forEach(function (suite) {
-          suite.parent = rootSuite;
-        });
-
-        return callback(rootSuite);
+        return allDone();
       }
     })
   });
+
+  function allDone() {
+    var rootSuite = {
+      root: true,
+      suites: results.reduce(function (a, b) {
+        // Flatten
+        return a.concat(b);
+      })
+    };
+
+    // Update parent link to point to new rootSuite
+    rootSuite.suites.forEach(function (suite) {
+      suite.parent = rootSuite;
+    });
+
+    return callback(rootSuite);
+  }
 }
 
 function test(file, options, callback) {
