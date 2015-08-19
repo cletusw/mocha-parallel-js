@@ -68,8 +68,6 @@ function test(file, options) {
     var suites;
     var runner = fork(__dirname + '/runner.js', { silent: true });
 
-    runner.stderr.pipe(process.stderr);
-
     runner.on('error', function (error) {
       console.error('Error executing file', file);
     });
@@ -79,14 +77,16 @@ function test(file, options) {
     });
 
     // Buffer stdout to avoid intermixing with other forks
-    var stdout = [];
-    runner.stdout.on('data', function (data) {
-      stdout.push(data);
-    });
+    var output = [];
+    function bufferOutput(data) {
+      output.push(data);
+    }
+    runner.stdout.on('data', bufferOutput);
+    runner.stderr.on('data', bufferOutput);
 
     runner.on('close', function () {
       if (suites) {
-        console.log(stdout.join(''));
+        console.log(output.join(''));
 
         return resolve(suites);
       }
