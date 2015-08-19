@@ -1,5 +1,6 @@
 var retrocycle = require('cycle').retrocycle;
 var fork = require('child_process').fork;
+var Promise = require('es6-promise').Promise;
 
 exports = module.exports = mochaParallel;
 
@@ -35,23 +36,11 @@ exports = module.exports = mochaParallel;
  * @param {mochaParallelCallback} callback - Called when all test have completed
  */
 function mochaParallel(files, options, callback) {
-  var forks = files.length;
-  var results = [];
-
   console.log();
 
-  files.forEach(function (file) {
-    test(file, options, function (suites) {
-      results.push(suites);
-
-      forks--;
-      if (!forks) {
-        return allDone();
-      }
-    })
-  });
-
-  function allDone() {
+  Promise.all(files.map(function (file) {
+    return test(file, options);
+  })).then(function (results) {
     var rootSuite = {
       root: true,
       suites: results.reduce(function (a, b) {
@@ -66,39 +55,41 @@ function mochaParallel(files, options, callback) {
     });
 
     return callback(rootSuite);
-  }
+  });
 }
 
-function test(file, options, callback) {
-  var suites;
-  var runner = fork(__dirname + '/runner.js', { silent: true });
+function test(file, options) {
+  return new Promise(function (resolve, reject) {
+    var suites;
+    var runner = fork(__dirname + '/runner.js', { silent: true });
 
-  runner.stderr.pipe(process.stderr);
+    runner.stderr.pipe(process.stderr);
 
-  runner.on('error', function (error) {
-    console.error('Error executing file', file);
-  });
+    runner.on('error', function (error) {
+      console.error('Error executing file', file);
+    });
 
-  runner.on('message', function (fileRootSuite) {
-    suites = retrocycle(fileRootSuite).suites;
-  });
+    runner.on('message', function (fileRootSuite) {
+      suites = retrocycle(fileRootSuite).suites;
+    });
 
-  // Buffer stdout to avoid intermixing with other forks
-  var stdout = [];
-  runner.stdout.on('data', function (data) {
-    stdout.push(data);
-  });
+    // Buffer stdout to avoid intermixing with other forks
+    var stdout = [];
+    runner.stdout.on('data', function (data) {
+      stdout.push(data);
+    });
 
-  runner.on('close', function () {
-    console.log(stdout.join(''));
+    runner.on('close', function () {
+      console.log(stdout.join(''));
 
-    return callback(suites);
-  });
+      return resolve(suites);
+    });
 
-  // Begin testing
-  runner.send({
-    file: file,
-    setup: options.setup,
-    options: options.mochaOptions
+    // Begin testing
+    runner.send({
+      file: file,
+      setup: options.setup,
+      options: options.mochaOptions
+    });
   });
 }

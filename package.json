@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "cycle": "^1.0.3",
+    "es6-promise": "^3.0.2",
     "mocha": "^1.7.0 || ^2.0.0"
   }
 }
