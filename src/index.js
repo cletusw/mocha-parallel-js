@@ -71,7 +71,7 @@ function mochaParallel(files, options, callback) {
 
       forks--;
       if (!forks) {
-        callback(rootSuite);
+        return callback(rootSuite);
       }
     });
 
