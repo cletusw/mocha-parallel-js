@@ -44,6 +44,7 @@ function mochaParallel(files, options, callback) {
   console.log();
 
   files.forEach(function (file) {
+    var suites;
     var runner = fork(__dirname + '/runner.js', { silent: true });
 
     runner.stderr.pipe(process.stderr);
@@ -53,11 +54,7 @@ function mochaParallel(files, options, callback) {
     });
 
     runner.on('message', function (fileRootSuite) {
-      fileRootSuite = retrocycle(fileRootSuite);
-      fileRootSuite.suites.forEach(function (suite) {
-        suite.parent = rootSuite;
-        rootSuite.suites.push(suite);
-      });
+      suites = retrocycle(fileRootSuite).suites;
     });
 
     // Buffer stdout to avoid intermixing with other forks
@@ -68,6 +65,11 @@ function mochaParallel(files, options, callback) {
 
     runner.on('close', function () {
       console.log(stdout.join(''));
+
+      suites.forEach(function (suite) {
+        suite.parent = rootSuite;
+        rootSuite.suites.push(suite);
+      });
 
       forks--;
       if (!forks) {
