@@ -8,6 +8,7 @@ process.on('message', function (data) {
   data.setup && mocha.addFile(data.setup);
   mocha.addFile(data.file);
 
+  console.log();
   console.log(data.file);
 
   mocha.run(function() {
