@@ -23,7 +23,7 @@ exports = module.exports = mochaParallel;
  *     timeout: 10e3
  *   }
  * };
- * mochaParallel(files, options, function(rootSuite) {
+ * mochaParallel(files, options).then(function(rootSuite) {
  *   console.log('ALL DONE');
  *   console.log(rootSuite.suites);
  * });
@@ -33,12 +33,12 @@ exports = module.exports = mochaParallel;
  * @param {string} [options.setup] - Optional file to be run before each test file
  * @param {Object} [options.mochaOptions] - Optional options to pass to Mocha's JS API
  *   @see {@link https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options}
- * @param {mochaParallelCallback} callback - Called when all test have completed
+ * @returns {Promise<{suites:Array}>} When all test have completed, resolves with the combined output
  */
-function mochaParallel(files, options, callback) {
+function mochaParallel(files, options) {
   console.log();
 
-  Promise.all(files.map(function (file) {
+  return Promise.all(files.map(function (file) {
     return test(file, options);
   })).then(function (results) {
     var rootSuite = {
@@ -54,7 +54,7 @@ function mochaParallel(files, options, callback) {
       suite.parent = rootSuite;
     });
 
-    return callback(rootSuite);
+    return rootSuite;
   });
 }
 
