@@ -85,9 +85,14 @@ function test(file, options) {
     });
 
     runner.on('close', function () {
-      console.log(stdout.join(''));
+      if (suites) {
+        console.log(stdout.join(''));
 
-      return resolve(suites);
+        return resolve(suites);
+      }
+      else {
+        return resolve([]);
+      }
     });
 
     // Begin testing
