@@ -5,8 +5,8 @@ process.on('message', function (data) {
   'useColors' in data.options || (data.options.useColors = true);
   var mocha = new Mocha(data.options);
 
-  mocha.addFile(data.file);
   data.setup && mocha.addFile(data.setup);
+  mocha.addFile(data.file);
 
   console.log(data.file);
 
