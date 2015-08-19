@@ -36,22 +36,29 @@ exports = module.exports = mochaParallel;
  */
 function mochaParallel(files, options, callback) {
   var forks = files.length;
-  var rootSuite = {
-    root: true,
-    suites: []
-  };
+  var results = [];
 
   console.log();
 
   files.forEach(function (file) {
     test(file, options, function (suites) {
-      suites.forEach(function (suite) {
-        suite.parent = rootSuite;
-        rootSuite.suites.push(suite);
-      });
+      results.push(suites);
 
       forks--;
       if (!forks) {
+        var rootSuite = {
+          root: true,
+          suites: results.reduce(function (a, b) {
+            // Flatten
+            return a.concat(b);
+          })
+        };
+
+        // Update parent link to point to new rootSuite
+        rootSuite.suites.forEach(function (suite) {
+          suite.parent = rootSuite;
+        });
+
         return callback(rootSuite);
       }
     })
