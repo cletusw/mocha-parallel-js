@@ -44,28 +44,7 @@ function mochaParallel(files, options, callback) {
   console.log();
 
   files.forEach(function (file) {
-    var suites;
-    var runner = fork(__dirname + '/runner.js', { silent: true });
-
-    runner.stderr.pipe(process.stderr);
-
-    runner.on('error', function (error) {
-      console.error('Error executing file', file);
-    });
-
-    runner.on('message', function (fileRootSuite) {
-      suites = retrocycle(fileRootSuite).suites;
-    });
-
-    // Buffer stdout to avoid intermixing with other forks
-    var stdout = [];
-    runner.stdout.on('data', function (data) {
-      stdout.push(data);
-    });
-
-    runner.on('close', function () {
-      console.log(stdout.join(''));
-
+    test(file, options, function (suites) {
       suites.forEach(function (suite) {
         suite.parent = rootSuite;
         rootSuite.suites.push(suite);
@@ -75,13 +54,40 @@ function mochaParallel(files, options, callback) {
       if (!forks) {
         return callback(rootSuite);
       }
-    });
+    })
+  });
+}
 
-    // Begin testing
-    runner.send({
-      file: file,
-      setup: options.setup,
-      options: options.mochaOptions
-    });
+function test(file, options, callback) {
+  var suites;
+  var runner = fork(__dirname + '/runner.js', { silent: true });
+
+  runner.stderr.pipe(process.stderr);
+
+  runner.on('error', function (error) {
+    console.error('Error executing file', file);
+  });
+
+  runner.on('message', function (fileRootSuite) {
+    suites = retrocycle(fileRootSuite).suites;
+  });
+
+  // Buffer stdout to avoid intermixing with other forks
+  var stdout = [];
+  runner.stdout.on('data', function (data) {
+    stdout.push(data);
+  });
+
+  runner.on('close', function () {
+    console.log(stdout.join(''));
+
+    return callback(suites);
+  });
+
+  // Begin testing
+  runner.send({
+    file: file,
+    setup: options.setup,
+    options: options.mochaOptions
   });
 }
