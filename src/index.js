@@ -1,6 +1,8 @@
 var retrocycle = require('cycle').retrocycle;
 var fork = require('child_process').fork;
 var Promise = require('es6-promise').Promise;
+var os = require('os');
+var throat = require('throat');
 
 exports = module.exports = mochaParallel;
 
@@ -32,15 +34,18 @@ exports = module.exports = mochaParallel;
  * @param {Object} options
  * @param {string} [options.setup] - Optional file to be run before each test file
  * @param {Object} [options.mochaOptions] - Optional options to pass to Mocha's JS API
+ * @param {number} [options.concurrency=Number of CPUs/cores] - Optional max concurrent tests
  *   @see {@link https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options}
  * @returns {Promise<{suites:Array}>} When all test have completed, resolves with the combined output
  */
 function mochaParallel(files, options) {
+  var concurrency = options.concurrency || os.cpus().length;
+
   console.log();
 
-  return Promise.all(files.map(function (file) {
+  return Promise.all(files.map(throat(concurrency, function (file) {
     return test(file, options);
-  })).then(function (results) {
+  }))).then(function (results) {
     var rootSuite = {
       root: true,
       suites: results.reduce(function (a, b) {
