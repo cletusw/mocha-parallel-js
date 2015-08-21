@@ -43,11 +43,16 @@ function mochaParallel(files, options) {
 
   console.log();
 
+  var startDateTime = new Date();
+
   return Promise.all(files.map(throat(concurrency, function (file) {
     return test(file, options.setup, options.mochaOptions);
   }))).then(function (results) {
+    var elapsedTimeInMs = new Date() - startDateTime;
     var rootSuite = {
       root: true,
+      startDateTime: startDateTime,
+      elapsedTimeInMs: elapsedTimeInMs,
       suites: results.reduce(function (a, b) {
         // Flatten
         return a.concat(b);
