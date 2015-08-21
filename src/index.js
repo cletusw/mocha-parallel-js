@@ -44,7 +44,7 @@ function mochaParallel(files, options) {
   console.log();
 
   return Promise.all(files.map(throat(concurrency, function (file) {
-    return test(file, options);
+    return test(file, options.setup, options.mochaOptions);
   }))).then(function (results) {
     var rootSuite = {
       root: true,
@@ -63,7 +63,7 @@ function mochaParallel(files, options) {
   });
 }
 
-function test(file, options) {
+function test(file, setup, mochaOptions) {
   return new Promise(function (resolve, reject) {
     var suites;
     var runner = fork(__dirname + '/runner.js', { silent: true });
@@ -98,8 +98,8 @@ function test(file, options) {
     // Begin testing
     runner.send({
       file: file,
-      setup: options.setup,
-      options: options.mochaOptions
+      setup: setup,
+      options: mochaOptions
     });
   });
 }
