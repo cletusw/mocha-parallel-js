@@ -34,6 +34,7 @@ exports = module.exports = mochaParallel;
  * @param {Object} options
  * @param {string} [options.setup] - Optional file to be run before each test file
  * @param {Object} [options.mochaOptions] - Optional options to pass to Mocha's JS API
+ * @param {Object} [options.env] - Optional environment variables to set on the child processes
  * @param {number} [options.concurrency=Number of CPUs/cores] - Optional max concurrent tests
  *   @see {@link https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options}
  * @returns {Promise<{suites:Array}>} When all test have completed, resolves with the combined output
@@ -46,7 +47,7 @@ function mochaParallel(files, options) {
   var startDateTime = new Date();
 
   return Promise.all(files.map(throat(concurrency, function (file) {
-    return test(file, options.setup, options.mochaOptions);
+    return test(file, options.setup, options.mochaOptions, options.env);
   }))).then(function (results) {
     var elapsedTimeInMs = new Date() - startDateTime;
     var rootSuite = {
@@ -68,10 +69,13 @@ function mochaParallel(files, options) {
   });
 }
 
-function test(file, setup, mochaOptions) {
+function test(file, setup, mochaOptions, env) {
   return new Promise(function (resolve, reject) {
     var suites;
-    var runner = fork(__dirname + '/runner.js', { silent: true });
+    var runner = fork(__dirname + '/runner.js', {
+      env: env,
+      silent: true
+    });
 
     runner.on('error', function (error) {
       console.error('Error executing file', file);
