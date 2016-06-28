@@ -1,6 +1,6 @@
 {
   "name": "mocha-parallel-js",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "JS API for running Mocha test files in parallel",
   "keywords": [
     "mocha",
