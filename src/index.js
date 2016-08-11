@@ -1,6 +1,5 @@
 var retrocycle = require('cycle').retrocycle;
 var fork = require('child_process').fork;
-var Promise = require('es6-promise').Promise;
 var os = require('os');
 var throat = require('throat');
 
